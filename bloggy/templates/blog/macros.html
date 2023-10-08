@@ -1,0 +1,58 @@
+{% macro img(post) -%}
+<img
+  src="{{ post.main_image.src }}"
+  width="1300"
+  height="450"
+  alt="{{ post.main_image.alt }}"
+  title="{{ post.main_image.title }}" >
+{% endmacro %}
+
+{% macro tags(post) -%}
+  {% for tag in post.tags %}
+    {% if loop.first %}
+    <span class="italic mt-8 ">Tags:</span>
+    <ul class="inline">
+    {% endif %}
+      <li class="inline">
+        <a class="mx-1" href="/blog/?tag={{ tag.name }}" target="_self" title="{{ tag.label }}">
+          {{tag.label}}
+        </a>{% if not loop.last %} | {% endif %}
+      </li>
+    {% if loop.last %}
+    </ul>
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{% macro posted_on(post) -%}
+  <footer class="italic text-sm mt-8 font-semibold">
+    <p>
+      Posted on <time datetime="{{ post.created.isoformat() }}">
+        {{ "{:%-d %B %Y}".format(post.created) }}</time>.
+    </p>
+  </footer>
+{% endmacro %}
+
+
+{% macro footer(post) -%}
+  <footer class="text-sm mt-8 font-semibold">
+    {% for tag in post.tags %}
+      {% if loop.first %}
+      <span>Tags:</span>
+      <ul class="inline">
+      {% endif %}
+        <li class="inline">
+          <a class="mx-1" href="/blog/?tag={{ tag.name }}" target="_self" title="{{ tag.label }}">
+            {{tag.label}}
+          </a>{% if not loop.last %} | {% endif %}
+        </li>
+      {% if loop.last %}
+      </ul>
+      {% endif %}
+    {% endfor %}
+    <p class="my-1">
+      Posted on <time datetime="{{ post.created.isoformat() }}">
+        {{ "{:%-d %B %Y}".format(post.created) }}</time>.
+    </p>
+  </footer>
+{% endmacro %}

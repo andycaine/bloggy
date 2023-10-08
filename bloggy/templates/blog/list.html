@@ -1,0 +1,23 @@
+{% extends 'blog/layout.html' %}
+{% import 'blog/macros.html' as macros %}
+{% block content %}
+<ol>
+{% for post in posts %}
+<li>
+  <a class="no-underline" href="{{ url_for ('blog.show_post', slug=post.slug) }}">
+    <h2>{{ post.title }}</h2>
+  </a>
+  {{ macros.img(post) }}
+
+  {{ post.body | md_to_html | first_para }}
+  <p>
+    <a href="{{ url_for ('blog.show_post', slug=post.slug) }}"> Read more... </a>
+  </p>
+
+  {{ macros.footer(post) }}
+
+  <hr>
+</li>
+{% endfor %}
+</ol>
+{% endblock %}

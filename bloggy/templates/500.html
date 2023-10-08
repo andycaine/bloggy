@@ -1,0 +1,11 @@
+{% extends 'blog/layout.html' %}
+{% block subtitle %}Server Error{% endblock %}
+{% block content %}
+<h2>Ooops...</h2>
+
+<p>
+    Something went wrong. We'll try to fix it as soon as we
+    can.  In the meantime, you can try again or
+    <a href="{{ url_for ('blog.list') }}">return home</a>.
+</p>
+{% endblock %}
