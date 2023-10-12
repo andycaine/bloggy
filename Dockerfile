@@ -11,6 +11,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 COPY . ./bloggy
 RUN pip install ./bloggy
 RUN pip install Waitress
+RUN pip install boto3
 RUN pip uninstall -y setuptools
 RUN pip uninstall -y pip
 
@@ -25,12 +26,14 @@ RUN adduser -D -h /app -g -u $APP_USER --system --shell /bin/false --disabled-pa
 
 WORKDIR /app
 RUN mkdir -p ./.aws
-RUN echo "[default]\nregion=us-west-2" > ./.aws/config
+RUN echo -e "[default]\nregion=eu-west-2" > ./.aws/config
 
 COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
 RUN chown -R ${APP_USER}: /app
+
+USER app_user
 
 HEALTHCHECK --interval=30s --timeout=10s \
   CMD curl -f http://localhost:8080/ping/ || exit 1
