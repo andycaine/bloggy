@@ -3,7 +3,7 @@ name = "bloggy"
 version = "0.0.1"
 description = "A basic flask-based blog app."
 dependencies = [
-    "flask", "bleach", "markdown", "aws-wsgi", "cattrs", "boto3"
+    "flask", "bleach", "markdown", "aws-wsgi", "cattrs"
 ]
 
 [build-system]
