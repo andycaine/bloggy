@@ -24,8 +24,8 @@ RUN addgroup $APP_USER
 RUN adduser -D -h /app -g -u $APP_USER --system --shell /bin/false --disabled-password
 
 WORKDIR /app
-RUN mkdir -p /app/.aws
-RUN echo "[default]\nregion=us-west-2" > ~www-data/.aws/config
+RUN mkdir -p ./.aws
+RUN echo "[default]\nregion=us-west-2" > ./.aws/config
 
 COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
