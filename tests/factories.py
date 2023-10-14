@@ -15,7 +15,7 @@ class ImageFactory(factory.Factory):
     class Meta:
         model = db.Image
 
-    src = factory.Faker('image_url')
+    src = factory.Faker('image_url', width=1300, height=450)
     alt = factory.Faker('sentence', nb_words=5)
     title = factory.Faker('sentence', nb_words=5)
 

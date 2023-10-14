@@ -29,6 +29,18 @@ def mock_get_published_post():
 
 
 @pytest.fixture
-def mock_get_all_published_posts():
-    with unittest.mock.patch('bloggy.db.get_all_published_posts') as mock:
+def mock_get_published_posts():
+    with unittest.mock.patch('bloggy.db.get_published_posts') as mock:
         yield mock
+
+
+@pytest.fixture()
+def use_local_dynamodb(monkeypatch):
+    monkeypatch.setenv('AWS_ACCESS_KEY_ID', 'foo')
+    monkeypatch.setenv('AWS_SECRET_ACCESS_KEY', 'bar')
+    bloggy.db.connect(use_local=True)
+
+
+@pytest.fixture()
+def empty_blog_table(use_local_dynamodb):
+    bloggy.db.truncate()

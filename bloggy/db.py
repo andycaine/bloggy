@@ -84,29 +84,56 @@ def save_post(post):
             })
 
 
-def get_all_posts():
-    response = _conn.table.query(
-        IndexName='GSI',
-        KeyConditionExpression='sk = :sk',
-        ExpressionAttributeValues={
-            ':sk': '#post'
-        }
-    )
-    return [_convertor.structure(item['post'], Post)
-            for item in response['Items']]
+@dataclasses.dataclass
+class PageableList:
+    items: list
+    paging_key: dict = None
 
 
-def get_all_published_posts(tag=None):
-    sk = tag and f'#post#published#tag#{tag}' or '#post#published'
-    response = _conn.table.query(
+def get_posts(include_unpublished=False, tag=None, limit=10,
+              paging_key=None):
+    sk = f'#post{"" if include_unpublished else "#published"}'\
+        f'{f"#tag#{tag}" if tag else ""}'
+
+    query_args = dict(
         IndexName='GSI',
         KeyConditionExpression='sk = :sk',
         ExpressionAttributeValues={
             ':sk': sk
-        }
+        },
+        Limit=limit,
+        ScanIndexForward=False
     )
-    return [_convertor.structure(item['post'], Post)
-            for item in response['Items']]
+
+    if paging_key:
+        exc_start_key = dict(pk=f'post#{paging_key["slug"]}',
+                             sk=sk,
+                             data=paging_key['created'])
+        query_args['ExclusiveStartKey'] = exc_start_key
+
+    response = _conn.table.query(**query_args)
+    posts = [_convertor.structure(item['post'], Post)
+             for item in response['Items']]
+
+    paging_key = None
+    if 'LastEvaluatedKey' in response:
+        paging_key = dict(
+            created=response['LastEvaluatedKey']['data'],
+            slug=response['LastEvaluatedKey']['pk'].split('#')[1]
+        )
+
+    return PageableList(items=posts,
+                        paging_key=paging_key)
+
+
+def get_all_posts(limit=10, paging_key=None):
+    return get_posts(include_unpublished=True, limit=limit,
+                     paging_key=paging_key)
+
+
+def get_published_posts(tag=None, limit=10, paging_key=None):
+    return get_posts(include_unpublished=False, tag=tag, limit=limit,
+                     paging_key=paging_key)
 
 
 def get_post(slug, on_not_found):
@@ -129,9 +156,17 @@ def get_published_post(slug, on_not_found):
         return post
 
 
-def _scan():
-    response = _conn.table.scan()
-    return response['Items']
+def _scan(esk=None):
+    scan_args = {}
+    if esk:
+        scan_args['ExclusiveStartKey'] = esk
+
+    response = _conn.table.scan(**scan_args)
+    for item in response['Items']:
+        yield item
+
+    if 'LastEvaluatedKey' in response:
+        yield from _scan(response['LastEvaluatedKey'])
 
 
 def _delete_all(items):

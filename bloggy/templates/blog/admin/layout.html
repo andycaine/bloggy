@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>{% block subtitle %}{{ config.SITE_NAME }} Blog{% endblock %} | {{ config.SITE_NAME }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="{{ url_for ('static', filename='js/htmx-1.9.6.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for ('static', filename='css/main.css') }}">
+</head>
+<body hx-boost="true" class="max-w-screen-lg mx-auto">
+    <div class="m-2">
+        <header class="border-b-2">
+            <h1>
+                <all-caps class="block">{{ config.SITE_NAME }}</all-caps>
+                <sub-title class="text-2xl capitalize font-normal tracking-wider text-slate-600 block mt-2 mb-5">{{ config.BLOG_NAME }}</sub-title>
+            </h1>
+        </header>
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

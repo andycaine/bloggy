@@ -27,9 +27,6 @@
       Newer posts
     </a>
   {% endif %}
-  {% if prev and next %}
-    <span class="mx-1">|</span>
-  {% endif %}
   {% if next %}
     <a href="/blog/?{% if request.args.get('tag') %}tag={{ request.args.get('tag') }}&{% endif %}pt={{ paging_tokens }}&page={{ next }}">
       Older posts

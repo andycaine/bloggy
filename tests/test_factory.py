@@ -20,8 +20,8 @@ def test_handler_404(client):
     assert response.status_code == 404
 
 
-def test_handler_500(client, mock_get_all_published_posts):
-    mock_get_all_published_posts.side_effect = Exception()
+def test_handler_500(client, mock_get_published_posts):
+    mock_get_published_posts.side_effect = Exception()
     response = client.get('/blog/')
     assert response.status_code == 500
     assert b'Server Error' in response.data
