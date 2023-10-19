@@ -1,8 +1,10 @@
+import datetime
 import unittest.mock
 
 import pytest
 
 import bloggy
+from . import factories
 
 
 @pytest.fixture
@@ -44,3 +46,23 @@ def use_local_dynamodb(monkeypatch):
 @pytest.fixture()
 def empty_blog_table(use_local_dynamodb):
     bloggy.db.truncate()
+
+
+@pytest.fixture()
+def saved_posts(empty_blog_table):
+    posts = [
+        factories.PostFactory(
+            title=f'Post {i}!!',
+            slug=f'post-{i}',
+            tags=[
+                factories.TagFactory(name='even', label='Even')
+            ] if i % 2 == 0 else [
+                factories.TagFactory(name='odd', label='Odd')
+            ],
+            published=False if i in [19, 5] else True,
+            created=datetime.datetime(2023, 1, i)
+        ) for i in range(1, 23)
+    ]
+    for post in posts:
+        bloggy.db.save_post(post)
+    return posts

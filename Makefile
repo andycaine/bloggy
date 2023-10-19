@@ -9,9 +9,11 @@ test:
 css:
 	npx tailwindcss -i ./bloggy/templates/main.css \
 		-o ./bloggy/static/css/main.css --minify
+	npx tailwindcss -i ./bloggy/templates/admin.css \
+		-o ./bloggy/static/css/admin.css --minify
 
 covrun:
-	coverage run -m pytest
+	coverage run --omit="tests/*" -m pytest
 
 cov: covrun
 	coverage report

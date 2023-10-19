@@ -1,34 +1,60 @@
-{% extends 'blog/layout.html' %}
-{% import 'blog/macros.html' as macros %}
+{% extends 'blog/admin/layout.html' %}
 {% block content %}
-<ol>
-{% for post in posts %}
-<li>
-  <a class="no-underline" href="{{ url_for ('blog.show_post', slug=post.slug) }}">
-    <h2>{{ post.title }}</h2>
-  </a>
-  {{ macros.img(post) }}
+<h2>Posts</h2>
+{% if posts|length > 0 %}
+<table class="w-full">
+  <thead class="border-b-2">
+    <th class="text-slate-900 py-2 px-2 text-left">Title</th>
+    <th class="text-slate-900 py-2 px-2 text-left">Slug</th>
+    <th class="text-slate-900 py-2 px-2 text-left">Created</th>
+    <th class="text-slate-900 py-2 px-2 text-left">Status</th>
+    <th class="text-slate-900 py-2 px-2 text-left"></th>
+  </thead>
+  <tbody class="border-b-2">
+    {% for post in posts %}
+    <tr class="{% if loop.index is divisibleby(2) %}bg-primary-light{% endif %}">
+      <td class="text-on-surface text-sm py-4 px-2 text-left align-middle">
+        <a href="{{ url_for ('blog_admin.view_post', slug=post.slug) }}">
+          {{ post.title }}
+        </a>
+      </td>
+      <td class="text-on-surface text-sm py-4 px-2 text-left align-middle">{{ post.slug }}</td>
+      <td class="text-on-surface text-sm py-4 px-2 text-left align-middle">{{ "{:%Y-%m-%d}".format(post.created) }}</td>
+      <td class="text-on-surface text-sm py-4 px-2 text-left align-middle">
+        {% if post.published %}
+          Published
+        {% else %}
+          Unpublished
+        {% endif %}
+      </td>
+      <td class="text-on-surface text-sm py-4 px-2 text-left align-middle">
+        <a href="{{ url_for ('blog_admin.edit_post', slug=post.slug) }}">Edit</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="px-2 py-4">
+  No posts found
+</p>
+{% endif %}
+<p class="px-2 py-4">
+  <a href="{{ url_for ('blog_admin.add_post') }}" >Add Post</a>
+</p>
 
-  {{ post.body | md_to_html | first_para }}
-  <p>
-    <a href="{{ url_for ('blog.show_post', slug=post.slug) }}"> Read more... </a>
-  </p>
-
-  {{ macros.footer(post) }}
-
-  <hr>
-</li>
-{% endfor %}
-</ol>
 {% if paging_tokens %}
-<p>
+<p class="px-2 py-4">
   {% if prev %}
-    <a href="/blog/?{% if request.args.get('tag') %}tag={{ request.args.get('tag') }}&{% endif %}pt={{ paging_tokens }}&page={{ prev }}">
+    <a href="/admin/posts/?{% if request.args.get('tag') %}tag={{ request.args.get('tag') }}&{% endif %}pt={{ paging_tokens }}&page={{ prev }}">
       Newer posts
     </a>
   {% endif %}
+  {% if prev and next %}
+  <span class="px-2">|</span>
+  {% endif %}
   {% if next %}
-    <a href="/blog/?{% if request.args.get('tag') %}tag={{ request.args.get('tag') }}&{% endif %}pt={{ paging_tokens }}&page={{ next }}">
+    <a href="/admin/posts/?{% if request.args.get('tag') %}tag={{ request.args.get('tag') }}&{% endif %}pt={{ paging_tokens }}&page={{ next }}">
       Older posts
     </a>
   {% endif %}

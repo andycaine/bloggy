@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  p {
+    @apply text-on-surface;
+  }
+  a {
+    @apply text-indigo-800 underline;
+  }
+  h2 {
+    @apply text-2xl text-on-surface tracking-wider font-semibold mt-8 mb-5;
+  }
+  h3 {
+    @apply text-xl text-on-surface tracking-wider font-semibold mt-5 mb-2;
+  }
+  form label {
+    @apply text-sm font-medium text-on-surface
+  }
+  button {
+    @apply w-32 bg-primary hover:bg-primary-dark text-on-primary font-bold py-2 px-4 rounded
+  }
+}
+
+@layer components {
+
+}
+
+@layer utilities {
+  .bg-primary-light {
+    @apply bg-indigo-50
+  }
+  .bg-primary-dark {
+    @apply bg-indigo-800
+  }
+  .bg-primary {
+    @apply bg-indigo-600
+  }
+  .text-secondary-dark {
+    @apply text-teal-700
+  }
+  .text-on-surface, .text-on-background, .text-on-secondary {
+    @apply text-black
+  }
+  .text-on-primary, .text-on-error {
+    @apply text-white
+  }
+  .bg-secondary {
+    @apply bg-teal-400
+  }
+  .bg-secondary-dark {
+    @apply bg-teal-700
+  }
+  .text-error {
+    @apply text-red-700
+  }
+  .bg-error {
+    @apply bg-red-700
+  }
+  .bg-error-dark {
+    @apply bg-red-900
+  }
+
+  .btn-caution {
+    @apply bg-error text-on-error hover:bg-error-dark
+  }
+  .flash-success {
+    @apply bg-secondary-main text-on-secondary
+  }
+  .flash-warn {
+    @apply bg-error text-on-error
+  }
+  .flash-error {
+    @apply bg-error text-on-error
+  }
+  .error {
+    @apply text-error
+  }
+}

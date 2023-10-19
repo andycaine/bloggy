@@ -6,6 +6,10 @@ import bloggy.db as db
 from . import factories
 
 
+def post_or_fail(slug):
+    return db.get_post(slug=slug, on_not_found=pytest.fail)
+
+
 def test_save_then_get_post(empty_blog_table):
     tags = [
         db.Tag(name='tag1', label='Tag 1'),
@@ -20,8 +24,7 @@ def test_save_then_get_post(empty_blog_table):
                                        title='Image title'),
                    published=True)
     db.save_post(post)
-    saved = db.get_post(slug=post.slug,
-                        on_not_found=pytest.fail)
+    saved = post_or_fail(slug=post.slug)
 
     assert saved == post
 
@@ -141,3 +144,105 @@ def test_pagination(empty_blog_table):
                                       paging_key=response.paging_key)
     assert not response.paging_key
     assert [p.slug for p in response.items] == ['post1']
+
+
+def test_update_post(empty_blog_table):
+    post = factories.PostFactory()
+    db.save_post(post)
+
+    post.title = 'New title'
+    db.update_post(post)
+
+    updated = post_or_fail(slug=post.slug)
+    assert updated.title == 'New title'
+
+
+def test_retag_post(empty_blog_table):
+    tag1 = factories.TagFactory(name='tag1')
+    tag2 = factories.TagFactory(name='tag2')
+    post = factories.PostFactory(
+        tags=[tag1, tag2],
+        published=True
+    )
+
+    db.save_post(post)
+
+    tag3 = factories.TagFactory(name='tag3')
+    post.tags.remove(tag1)
+    post.tags.append(tag3)
+
+    db.update_post(post)
+
+    updated = post_or_fail(slug=post.slug)
+    assert updated.tags == [tag2, tag3]
+
+    assert db.get_posts(tag=tag1).items == []
+    assert db.get_posts(tag='tag3').items == [updated]
+
+
+def test_publish_post(empty_blog_table):
+    tag1 = factories.TagFactory(name='tag1')
+    post = factories.PostFactory(
+        tags=[tag1],
+        published=False
+    )
+
+    db.save_post(post)
+
+    post.published = True
+
+    db.update_post(post)
+
+    assert db.get_posts(tag='tag1').items == [post]
+
+
+def test_unpublish_post(empty_blog_table):
+    tag1 = factories.TagFactory(name='tag1')
+    post = factories.PostFactory(
+        tags=[tag1],
+        published=True
+    )
+
+    db.save_post(post)
+
+    post.published = False
+
+    db.update_post(post)
+
+    assert db.get_posts(tag='tag1').items == []
+
+
+def test_delete_post(empty_blog_table):
+    post = factories.PostFactory()
+    db.save_post(post)
+
+    db.delete_post(post.slug)
+
+    with pytest.raises(Exception, match=r'Test exception'):
+        db.get_post(slug=post.slug, on_not_found=raise_exception)
+
+
+def test_duplicate_slug(empty_blog_table):
+    db.save_post(factories.PostFactory(slug='post1'))
+
+    with pytest.raises(db.DuplicateKeyException,
+                       match=r'Item already exists'):
+        db.save_post(factories.PostFactory(slug='post1'))
+
+
+def test_concurrent_updates(empty_blog_table):
+    post = factories.PostFactory(title='Initial title')
+    db.save_post(post)
+
+    stale = db.get_post(slug=post.slug, on_not_found=pytest.fail)
+
+    post.title = 'New title'
+    db.update_post(post)
+
+    stale.title = 'Another title'
+    with pytest.raises(db.ConcurrentUpdateException,
+                       match=r'Concurrent update exception'):
+        db.update_post(stale)
+
+    updated = post_or_fail(slug=post.slug)
+    assert updated.title == 'New title'

@@ -1,3 +1,0 @@
-export BLOGGY_SITE_NAME="bloggy.app"
-export BLOGGY_BLOG_NAME="An Example Blog"
-export BLOGGY_ENV=dev

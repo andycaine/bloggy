@@ -1,0 +1,67 @@
+{% extends 'blog/admin/layout.html' %}
+{% macro render_field(field) -%}
+  <div class="border-b px-4 flex flex-row flex-wrap py-7">
+    {{ field.label(class_="w-48 break-words") }}
+    <div class="grow w-80">
+      {{ field(**kwargs)|safe }}
+      {% if field.errors %}
+      <ul class="error text-sm">
+        {% for error in field.errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+{% endmacro %}
+{% block subtitle %}Edit Post: {{ post.title }}{% endblock %}
+{% block content %}
+<h2>Edit Post</h2>
+
+<form method="post" action="." class="max-w-4xl" >
+    <fieldset>
+
+      <div class="border-b px-4 flex flex-row flex-wrap py-7 ">
+        <label for="slug" class="w-48 flex-none break-words">Slug</label>
+        <input class="w-80 grow rounded-md border-gray-300 text-sm px-3 py-2 border" disabled id="slug" name="slug" type="text" value="{{ post.slug }}">
+      </div>
+
+      {{ render_field(form.title, class_="w-full rounded-md border-gray-300 text-sm px-3 py-2 border") }}
+
+      <div class="border-b px-4 flex flex-row flex-wrap py-7">
+        <label for="created" class="w-48 break-words">Created</label>
+        <input class="grow w-80 rounded-md border-gray-300 text-sm px-3 py-2 border" disabled id="created" name="created" type="date" value="{{ '{:%Y-%m-%d}'.format(post.created) }}">
+      </div>
+      {{ render_field(form.main_image, class_="w-full rounded-md border-gray-300 text-sm px-3 py-2 border") }}
+
+      {{ render_field(form.body, class_="grow h-96 w-full rounded-md border-gray-300 text-sm px-3 py-2 border") }}
+
+
+      {{ form.version() }}
+
+      <div class="border-b px-4 flex flex-row flex-wrap py-7">
+        <input id="published" type="checkbox" name="published" class="mr-2" {% if post.published %}checked{% endif %} >
+        <label for="published w-48 break-words">Published</label>
+      </div>
+
+
+      <div class="py-5 px-4">
+        <span class="text-right float-right">
+          <button>Save</button>
+        </span>
+        <button class="btn-caution" id="delete-btn"
+          hx-delete="{{ url_for('blog_admin.delete_post', slug=post.slug) }}"
+          hx-push-url="true"
+          hx-confirm="Are you sure you want to delete this post?"
+          hx-target="body">
+            Delete
+        </button>
+      </div>
+  </fieldset>
+</form>
+
+<p class="px-2 py-4">
+  <a href="{{ url_for ('blog_admin.list') }}">Back</a>
+</p>
+
+{% endblock %}

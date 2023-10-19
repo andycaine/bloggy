@@ -46,6 +46,9 @@ def create_app():
     from . import blog
     app.register_blueprint(blog.bp)
 
+    from . import admin
+    app.register_blueprint(admin.bp)
+
     return app
 
 

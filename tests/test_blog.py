@@ -1,29 +1,3 @@
-import datetime
-
-import pytest
-
-from bloggy import db
-from . import factories
-
-
-@pytest.fixture()
-def saved_posts(empty_blog_table):
-    posts = [
-        factories.PostFactory(
-            title=f'Post {i}!!',
-            slug=f'post-{i}',
-            tags=[
-                factories.TagFactory(name='even', label='Even')
-            ] if i % 2 == 0 else [
-                factories.TagFactory(name='odd', label='Odd')
-            ],
-            published=False if i in [19, 5] else True,
-            created=datetime.datetime(2023, 1, i)
-        ) for i in range(1, 23)
-    ]
-    for post in posts:
-        db.save_post(post)
-    return posts
 
 
 def test_index_redirect(client):
@@ -63,15 +37,14 @@ def test_paginate_with_filter(client, saved_posts):
     assert b'Post 2!!' in response.data
 
     prev_link = b'<a href="/blog/?tag=even&pt=eyIyIjogeyJjcmVhdGVkIjogIjIw' \
-        b'MjMtMDEtMDRUMDA6MDA6MDAiLCAic2x1ZyI6ICJwb3N0LTQifSwgIjMiOiBudWxs' \
-        b'fQ&page=1"'
+        b'MjMtMDEtMDRUMDA6MDA6MDAiLCAic2x1ZyI6ICJwb3N0LTQifX0&page=1'
     assert prev_link in response.data
 
 
 def test_prev_page_with_filter(client, saved_posts):
     response = client.get('/blog/?tag=even&pt=eyIyIjogeyJjcmVhdGVkIjogIjIw'
                           'MjMtMDEtMDRUMDA6MDA6MDAiLCAic2x1ZyI6ICJwb3N0LTQ'
-                          'ifSwgIjMiOiBudWxsfQ&page=1')
+                          'ifX0&page=1')
     assert b'Post 2!!' not in response.data
     assert b'Post 20!!' in response.data
     assert response.status_code == 200

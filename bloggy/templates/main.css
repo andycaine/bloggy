@@ -4,10 +4,10 @@
 
 @layer base {
   p {
-    @apply my-5 text-slate-900;
+    @apply my-5 text-slate-700;
   }
   a {
-    @apply text-emerald-600 underline;
+    @apply text-emerald-500 underline;
   }
   h1 {
     @apply text-3xl text-slate-900 uppercase tracking-widest font-bold mt-10;
@@ -18,5 +18,4 @@
   h3 {
     @apply text-xl text-slate-700 tracking-wider font-semibold mt-5 mb-2;
   }
-
 }
