@@ -1,0 +1,52 @@
+{% extends 'blog/admin/layout.html' %}
+{% macro render_field(field) -%}
+  <div class="border-b px-4 flex flex-row flex-wrap py-7">
+    {{ field.label(class_="w-48 break-words") }}
+    <div class="grow">
+      {{ field(**kwargs)|safe }}
+      {% if field.errors %}
+      <ul class="error text-sm">
+        {% for error in field.errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+{% endmacro %}
+{% block subtitle %}New Post{% endblock %}
+{% block content %}
+<h2>New Post</h2>
+
+<form method="post" action="." class="max-w-4xl" >
+    <fieldset>
+
+      {{ render_field(form.slug, class_="w-full rounded-md border-gray-300 text-sm px-3 py-2 border") }}
+
+      {{ render_field(form.title, class_="w-full rounded-md border-gray-300 text-sm px-3 py-2 border") }}
+
+      {{ render_field(form.body, class_="h-96 w-full rounded-md border-gray-300 text-sm px-3 py-2 border") }}
+
+      {{ render_field(form.tags, class_="w-full rounded-md border-gray-300 text-sm px-3 py-2 border") }}
+
+      {{ form.version() }}
+
+      <div class="border-b px-4 flex flex-row flex-wrap py-7">
+        {{ form.published(class_="mr-2") }}
+        {{ form.published.label }}
+      </div>
+
+
+      <div class="py-5 px-4">
+        <span class="text-right float-right">
+          <button>Save</button>
+        </span>
+      </div>
+  </fieldset>
+</form>
+
+<p class="px-2 py-4">
+  <a href="{{ url_for ('blog_admin.list_posts') }}">Back</a>
+</p>
+
+{% endblock %}

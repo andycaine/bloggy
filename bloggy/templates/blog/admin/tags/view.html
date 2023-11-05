@@ -1,0 +1,24 @@
+{% extends 'blog/admin/layout.html' %}
+{% macro render_field(field_name, field_value) -%}
+  <div class="px-4 py-7 flex flex-row flex-wrap border-b">
+    <dt class="w-48 flex-none font-medium text-sm">{{ field_name }}</dt>
+    <dd class="w-80 grow text-sm">{{ field_value }}</dd>
+  </div>
+{% endmacro %}
+{% block subtitle %}Tag: {{ tag.label }}{% endblock %}
+{% block content %}
+<h2>Tag: {{ tag.label }}</h2>
+
+<dl class="max-w-4xl">
+  {{ render_field("Name", tag.name) }}
+  {{ render_field("Label", tag.label) }}
+
+
+</dl>
+
+<p class="px-2 py-4">
+    <a href="{{ url_for ('blog_admin.edit_tag', name=tag.name) }}">Edit</a>
+    |
+    <a href="{{ url_for ('blog_admin.list_tags') }}">Back</a>
+</p>
+{% endblock %}

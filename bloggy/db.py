@@ -23,7 +23,7 @@ _convertor.register_structure_hook(
 )
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class Image:
     src: str
     alt: str
@@ -34,6 +34,7 @@ class Image:
 class Tag:
     name: str
     label: str
+    version: int = 1
 
 
 @dataclasses.dataclass
@@ -109,8 +110,31 @@ def _tag_item(tag):
         pk=f'tag#{tag.name}',
         sk='#tag',
         data=tag.label,
+        version=tag.version,
         tag=_convertor.unstructure(tag),
     )
+
+
+def save_tag(tag):
+    tag.version = 1
+    transact_items = [dict(
+        Put=dict(
+            TableName=_table_name,
+            ConditionExpression='attribute_not_exists(pk)',
+            Item=_tag_item(tag)
+        )
+    )]
+
+    try:
+        _conn.client.transact_write_items(
+            TransactItems=transact_items
+        )
+    except _conn.client.exceptions.TransactionCanceledException as e:
+        reasons = [reason['Code'] for reason
+                   in e.response['CancellationReasons']]
+        if 'ConditionalCheckFailed' in reasons:
+            raise DuplicateKeyException('Item already exists')
+        raise e
 
 
 def save_post(post):
@@ -136,13 +160,6 @@ def save_post(post):
                     Item=_published_post_tag_item(post, tag)
                 )
             ))
-    for tag in post.tags:  # TODO: assume tags already exist
-        transact_items.append(dict(
-            Put=dict(
-                TableName=_table_name,
-                Item=_tag_item(tag)
-            )
-        ))
 
     try:
         _conn.client.transact_write_items(
@@ -221,6 +238,48 @@ def get_post(slug, on_not_found):
     return _convertor.structure(response['Item']['post'], Post)
 
 
+def get_tag(name, on_not_found):
+    response = _conn.table.get_item(
+        Key={
+            'pk': f'tag#{name}',
+            'sk': '#tag'
+        }
+    )
+    if 'Item' not in response:
+        on_not_found()
+        return None
+    return _convertor.structure(response['Item']['tag'], Tag)
+
+
+def get_all_tags(limit=10, paging_key=None):
+    query_args = dict(
+        IndexName='GSI',
+        KeyConditionExpression='sk = :sk',
+        ExpressionAttributeValues={
+            ':sk': '#tag'
+        },
+        Limit=limit
+    )
+    if paging_key:
+        exc_start_key = dict(pk=f'tag#{paging_key["name"]}',
+                             sk='#tag',
+                             data=paging_key['created'])
+        query_args['ExclusiveStartKey'] = exc_start_key
+
+    response = _conn.table.query(**query_args)
+    tags = [_convertor.structure(item['tag'], Tag)
+            for item in response['Items']]
+
+    paging_key = None
+    if 'LastEvaluatedKey' in response:
+        paging_key = dict(
+            created=response['LastEvaluatedKey']['data'],
+            name=response['LastEvaluatedKey']['pk'].split('#')[1]
+        )
+
+    return PageableList(items=tags, paging_key=paging_key)
+
+
 def get_published_post(slug, on_not_found):
     post = get_post(slug, on_not_found)
     if not post.published:
@@ -285,13 +344,31 @@ def update_post(post):
                     Item=_published_post_tag_item(post, tag)
                 )
             ))
-    for tag in post.tags:  # TODO: again, don't update the tag items here
-        transact_items.append(dict(
-            Put=dict(
-                TableName=_table_name,
-                Item=_tag_item(tag)
-            )
-        ))
+    try:
+        _conn.client.transact_write_items(
+            TransactItems=transact_items
+        )
+    except _conn.client.exceptions.TransactionCanceledException as e:
+        reasons = [reason['Code'] for reason
+                   in e.response['CancellationReasons']]
+        if 'ConditionalCheckFailed' in reasons:
+            raise ConcurrentUpdateException('Concurrent update exception')
+        raise e
+
+
+def update_tag(tag):
+    tag.version += 1
+    transact_items = []
+    transact_items.append(dict(
+        Put=dict(
+            TableName=_table_name,
+            Item=_tag_item(tag),
+            ConditionExpression='version = :version',
+            ExpressionAttributeValues={
+                ':version': _serializer.serialize(tag.version - 1)
+            }
+        ),
+    ))
     try:
         _conn.client.transact_write_items(
             TransactItems=transact_items
@@ -341,3 +418,7 @@ def _get_items(pk):
 
 def delete_post(slug):
     _delete_all(_get_items(pk=f'post#{slug}'))
+
+
+def delete_tag(name):
+    _delete_all(_get_items(pk=f'tag#{name}'))

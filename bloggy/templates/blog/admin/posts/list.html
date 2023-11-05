@@ -46,16 +46,16 @@
 {% if paging_tokens %}
 <p class="px-2 py-4">
   {% if prev %}
-    <a href="/admin/posts/?{% if request.args.get('tag') %}tag={{ request.args.get('tag') }}&{% endif %}pt={{ paging_tokens }}&page={{ prev }}">
-      Newer posts
+    <a href="/admin/posts/?pt={{ paging_tokens }}&page={{ prev }}">
+      Previous page
     </a>
   {% endif %}
   {% if prev and next %}
   <span class="px-2">|</span>
   {% endif %}
   {% if next %}
-    <a href="/admin/posts/?{% if request.args.get('tag') %}tag={{ request.args.get('tag') }}&{% endif %}pt={{ paging_tokens }}&page={{ next }}">
-      Older posts
+    <a href="/admin/posts/?pt={{ paging_tokens }}&page={{ next }}">
+      Next page
     </a>
   {% endif %}
 </p>

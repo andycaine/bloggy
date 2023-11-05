@@ -47,9 +47,14 @@ def test_update_post_valid_post(client, empty_blog_table):
         slug='post-xyz',
         published=False,
         title='Post XYZ',
+        tags=[],
         body='This is post xyz'
     )
     bloggy.db.save_post(post)
+
+    tag = factories.TagFactory(name='tag-xyz')
+    bloggy.db.save_tag(tag)
+
     response = client.get('/blog/post-xyz/')
     assert response.status_code == 404
 
@@ -60,6 +65,7 @@ def test_update_post_valid_post(client, empty_blog_table):
     response = client.post('/admin/posts/post-xyz/edit/', data={
         'title': 'Post ZZZ',
         'body': 'This is post ZZZ',
+        'tags': ['tag-xyz'],
         'published': 'on'
     })
     assert response.status_code == 302
@@ -73,7 +79,8 @@ def test_update_post_valid_post(client, empty_blog_table):
 def test_update_concurrent_edits(client, empty_blog_table):
     post = factories.PostFactory(
         slug='post-xyz',
-        title='Post XYZ'
+        title='Post XYZ',
+        tags=[]
     )
     bloggy.db.save_post(post)
 
@@ -124,3 +131,20 @@ def test_add_post_duplicate_slug(client, empty_blog_table):
     })
     assert response.status_code == 200
     assert b'Slug already exists' in response.data
+
+
+def test_add_tag(client, empty_blog_table):
+    response = client.get('/admin/tags/add/')
+    assert response.status_code == 200
+    assert b'New Tag' in response.data
+
+    response = client.post('/admin/tags/add/', data={
+        'name': 'tag-xyz',
+        'label': 'Tag XYZ'
+    })
+    assert response.status_code == 302
+    assert response.headers['Location'] == '/admin/tags/tag-xyz/'
+
+    response = client.get('/admin/tags/tag-xyz/')
+    assert response.status_code == 200
+    assert b'Tag XYZ' in response.data

@@ -1,0 +1,53 @@
+{% extends 'blog/admin/layout.html' %}
+{% block content %}
+<h2>Tags</h2>
+{% if tags|length > 0 %}
+<table class="w-full">
+  <thead class="border-b-2">
+    <th class="text-slate-900 py-2 px-2 text-left">Name</th>
+    <th class="text-slate-900 py-2 px-2 text-left">Label</th>
+    <th class="text-slate-900 py-2 px-2 text-left"></th>
+  </thead>
+  <tbody class="border-b-2">
+    {% for tag in tags %}
+    <tr class="{% if loop.index is divisibleby(2) %}bg-primary-light{% endif %}">
+      <td class="text-on-surface text-sm py-4 px-2 text-left align-middle">
+        <a href="{{ url_for ('blog_admin.view_tag', name=tag.name) }}">
+          {{ tag.name }}
+        </a>
+      </td>
+      <td class="text-on-surface text-sm py-4 px-2 text-left align-middle">{{ tag.label }}</td>
+      <td class="text-on-surface text-sm py-4 px-2 text-left align-middle">
+        <a href="{{ url_for ('blog_admin.edit_tag', name=tag.name) }}">Edit</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="px-2 py-4">
+  No tags found
+</p>
+{% endif %}
+<p class="px-2 py-4">
+  <a href="{{ url_for ('blog_admin.add_tag') }}" >Add Tag</a>
+</p>
+
+{% if paging_tokens %}
+<p class="px-2 py-4">
+  {% if prev %}
+    <a href="/admin/tags/?pt={{ paging_tokens }}&page={{ prev }}">
+      Previous page
+    </a>
+  {% endif %}
+  {% if prev and next %}
+  <span class="px-2">|</span>
+  {% endif %}
+  {% if next %}
+    <a href="/admin/tags/?pt={{ paging_tokens }}&page={{ next }}">
+      Next page
+    </a>
+  {% endif %}
+</p>
+{% endif %}
+{% endblock %}

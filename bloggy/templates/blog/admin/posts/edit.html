@@ -36,6 +36,7 @@
 
       {{ render_field(form.body, class_="grow h-96 w-full rounded-md border-gray-300 text-sm px-3 py-2 border") }}
 
+      {{ render_field(form.tags, class_="w-full rounded-md border-gray-300 text-sm px-3 py-2 border") }}
 
       {{ form.version() }}
 
@@ -61,7 +62,7 @@
 </form>
 
 <p class="px-2 py-4">
-  <a href="{{ url_for ('blog_admin.list') }}">Back</a>
+  <a href="{{ url_for ('blog_admin.list_posts') }}">Back</a>
 </p>
 
 {% endblock %}

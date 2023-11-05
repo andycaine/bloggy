@@ -10,6 +10,13 @@ db.connect(use_local=True)
 
 db.truncate()
 
+tags = []
+for _ in range(5):
+    tag = factories.TagFactory()
+    tags.append(tag)
+    db.save_tag(tag)
+
+
 for _ in range(100):
-    post = factories.PostFactory()
+    post = factories.PostFactory(tags=tags)
     db.save_post(post)
